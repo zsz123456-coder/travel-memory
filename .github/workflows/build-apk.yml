@@ -11,21 +11,21 @@ jobs:
 
     steps:
       - name: 拉取代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '20'
 
       - name: 安装 Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: 安装 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v2
 
       - name: 安装依赖
         run: npm install
@@ -47,17 +47,7 @@ jobs:
 
       - name: 复制图标到 Android 项目
         run: |
-          mkdir -p android/app/src/main/res/mipmap-mdpi
-          mkdir -p android/app/src/main/res/mipmap-hdpi
-          mkdir -p android/app/src/main/res/mipmap-xhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-          
-          [ -f "mipmap-mdpi/ic_launcher.png" ] && cp mipmap-mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ || echo "无 mdpi 图标"
-          [ -f "mipmap-hdpi/ic_launcher.png" ] && cp mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ || echo "无 hdpi 图标"
-          [ -f "mipmap-xhdpi/ic_launcher.png" ] && cp mipmap-xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ || echo "无 xhdpi 图标"
-          [ -f "mipmap-xxhdpi/ic_launcher.png" ] && cp mipmap-xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ || echo "无 xxhdpi 图标"
-          [ -f "mipmap-xxxhdpi/ic_launcher.png" ] && cp mipmap-xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ || echo "无 xxxhdpi 图标"
+          cp -r mipmap-* android/app/src/main/res/ 2>/dev/null || echo "没有找到图标文件夹"
 
       - name: 同步资源
         run: npx cap sync android
@@ -69,7 +59,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: 上传 APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: 小旅行-安装包
           path: android/app/build/outputs/apk/debug/app-debug.apk
