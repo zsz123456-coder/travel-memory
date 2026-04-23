@@ -48,38 +48,32 @@ jobs:
       - name: 同步资源
         run: npx cap sync android
 
-      - name: 强制复制图标（在 sync 之后）
+      - name: 复制图标并创建 ic_launcher_round
         run: |
-          # 清空并重建图标目录
+          # 复制所有图标文件夹
           for dir in mipmap-*/; do
             if [ -d "$dir" ]; then
               dirname=$(basename "$dir")
               target_dir="android/app/src/main/res/$dirname"
-              rm -rf "$target_dir"
               mkdir -p "$target_dir"
               cp -f "$dir"* "$target_dir/"
-              echo "✅ 已复制: $dirname"
+              
+              # 如果没有 ic_launcher_round.png，从 ic_launcher.png 复制
+              if [ ! -f "$target_dir/ic_launcher_round.png" ] && [ -f "$target_dir/ic_launcher.png" ]; then
+                cp -f "$target_dir/ic_launcher.png" "$target_dir/ic_launcher_round.png"
+                echo "已创建: $dirname/ic_launcher_round.png"
+              fi
+              
+              echo "已复制: $dirname"
             fi
           done
           
           # 删除自适应图标配置
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           
-          # 修复 AndroidManifest.xml
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # 删除 roundIcon 引用
-          sed -i 's/ android:roundIcon="@mipmap\/[^"]*"//g' "$MANIFEST"
-          # 确保 icon 属性正确
-          if grep -q 'android:icon=' "$MANIFEST"; then
-            sed -i 's|android:icon="@mipmap/[^"]*"|android:icon="@mipmap/ic_launcher"|g' "$MANIFEST"
-          else
-            sed -i 's|<application |<application android:icon="@mipmap/ic_launcher" |' "$MANIFEST"
-          fi
-          
-          # 验证图标是否存在
+          # 验证图标
           echo "=== 验证图标 ==="
-          find android/app/src/main/res -name "ic_launcher.png" | head -5
-          ls -la android/app/src/main/res/mipmap-*/ic_launcher.png
+          find android/app/src/main/res -name "ic_launcher*.png" | head -10
 
       - name: 编译 APK
         run: |
