@@ -34,10 +34,18 @@ jobs:
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
+      - name: 创建 www 目录并复制文件
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp style.css www/
+          cp app.js www/
+          cp -r resources www/ 2>/dev/null || true
+
       - name: 添加 Android 平台
         run: npx cap add android
 
-      - name: 复制图标
+      - name: 复制图标到 Android 项目
         run: |
           mkdir -p android/app/src/main/res/mipmap-mdpi
           mkdir -p android/app/src/main/res/mipmap-hdpi
