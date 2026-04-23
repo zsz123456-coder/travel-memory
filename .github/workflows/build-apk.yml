@@ -62,18 +62,18 @@ jobs:
             fi
           done
           
+          # 删除自适应图标配置
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          echo "已删除自适应图标配置"
+          
           # 配置 AndroidManifest.xml 使用传统图标
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if grep -q "android:icon" "$MANIFEST"; then
+          if grep -q 'android:icon' "$MANIFEST"; then
             echo "AndroidManifest.xml 已配置图标"
           else
             sed -i 's/<application /<application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" /' "$MANIFEST"
-            echo "已添加图标配置到 AndroidManifest.xml"
+            echo "已添加图标配置"
           fi
-          
-          # 验证
-          echo "=== 验证图标 ==="
-          find android/app/src/main/res -name "ic_launcher.png" | wc -l
 
       - name: 编译 APK
         run: |
