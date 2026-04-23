@@ -1,0 +1,13 @@
+{
+  "name": "travel-memory",
+  "version": "1.0.0",
+  "description": "旅行记 · 地点故事地图",
+  "private": true,
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  }
+}

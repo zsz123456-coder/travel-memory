@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#FFB347">
+    <title>小旅行 · 地点故事地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 第1页：启动加载页 -->
+        <div id="loadingPage" class="page active">
+            <div class="loading-container" style="background-image: url('resources/background.jpg'); background-size: cover; background-position: center;">
+                <div class="loading-overlay"></div>
+                <div class="plane-wrapper">
+                    <div class="plane-cute" id="planeIcon">🎈</div>
+                    <div class="plane-trail" id="planeTrail"></div>
+                </div>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-bg">
+                        <div class="progress-fill-cute" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+                <div class="loading-tip" id="loadingTip">🎈 正在准备起飞...</div>
+                <div class="cloud-decoration">
+                    <div class="cloud-emoji cloud1">☁️</div>
+                    <div class="cloud-emoji cloud2">☁️</div>
+                    <div class="cloud-emoji cloud3">☁️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第2页：选择入口页 -->
+        <div id="welcomePage" class="page">
+            <div class="welcome-container" style="background-image: url('resources/welcome.jpg'); background-size: cover; background-position: center;">
+                <div class="welcome-overlay"></div>
+                <h1 class="welcome-title">小旅行</h1>
+                <p class="welcome-subtitle">记录你的每一次出发</p>
+                <div class="choice-cards">
+                    <div class="choice-card" id="newTripBtn">
+                        <div class="choice-icon"><img src="resources/bottom1.png" style="width: 100%; max-width: 120px;"></div>
+                    </div>
+                    <div class="choice-card" id="existingTripBtn">
+                        <div class="choice-icon"><img src="resources/bottom2.png" style="width: 100%; max-width: 120px;"></div>
+                    </div>
+                </div>
+                <div class="cute-deco">
+                    <span class="deco-star">⭐</span>
+                    <span class="deco-star">✨</span>
+                    <span class="deco-star">🌟</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第3页：新建行程页 -->
+        <div id="newTripPage" class="page" style="background-image: url('resources/new.jpg'); background-size: cover; background-position: center;">
+            <div class="page-header">
+                <button class="back-btn" data-page="welcomePage">←</button>
+                <h2>新建行程</h2>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="form-container">
+                <div class="cute-input-group">
+                    <label><img src="resources/style1.png" style="width: 24px; height: 24px; vertical-align: middle;"> 行程名称</label>
+                    <input type="text" id="tripNameInput" placeholder="例如：日本樱花之旅" class="cute-input">
+                </div>
+                <div class="cute-input-group">
+                    <label><img src="resources/style2.png" style="width: 24px; height: 24px; vertical-align: middle;"> 封面风格</label>
+                    <div class="style-selector" id="styleSelector">
+                        <div class="style-option" data-style="city"><img src="resources/1.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 城市</div>
+                        <div class="style-option" data-style="nature"><img src="resources/2.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 自然</div>
+                        <div class="style-option" data-style="beach"><img src="resources/3.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 海边</div>
+                        <div class="style-option" data-style="mountain"><img src="resources/4.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 山野</div>
+                        <div class="style-option" data-style="ancient"><img src="resources/5.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 古镇</div>
+                        <div class="style-option" data-style="family"><img src="resources/6.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 亲子</div>
+                        <div class="style-option" data-style="food"><img src="resources/7.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 美食</div>
+                        <div class="style-option" data-style="road"><img src="resources/8.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 公路</div>
+                        <div class="style-option" data-style="camp"><img src="resources/9.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 露营</div>
+                        <div class="style-option" data-style="history"><img src="resources/10.jpg" style="width: 24px; height: 24px; vertical-align: middle; border-radius: 12px;"> 古迹</div>
+                    </div>
+                </div>
+                <button class="cute-btn primary" id="createTripBtn" style="padding: 0; background: transparent; box-shadow: none;">
+                    <img src="resources/bottom3.png" style="width: 100%; max-width: 200px;">
+                </button>
+            </div>
+        </div>
+
+        <!-- 第4页：已有行程列表页 -->
+        <div id="tripListPage" class="page" style="background-image: url('resources/over.jpg'); background-size: cover; background-position: center;">
+            <div class="page-header">
+                <button class="back-btn" data-page="welcomePage">←</button>
+                <h2>我的行程</h2>
+                <div style="width: 40px;"></div>
+            </div>
+            <div class="trip-list" id="tripList"></div>
+            <div class="empty-trip" id="emptyTrip" style="display: none;">
+                <div class="empty-icon"><img src="resources/style2.png" style="width: 64px; height: 64px;"></div>
+                <p>还没有行程，去创建一个吧~</p>
+                <button class="cute-btn" id="goNewTripBtn"><img src="resources/style3.png" style="width: 20px; height: 20px; vertical-align: middle;"> 创建新行程</button>
+            </div>
+        </div>
+
+        <!-- 第5页：地图主页 -->
+        <div id="mapPage" class="page">
+            <div class="map-header">
+                <button class="back-btn" id="mapBackBtn">←</button>
+                <div class="trip-name" id="currentTripName">加载中...</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="poster-btn" id="posterBtn" title="生成海报">📸</button>
+                    <button class="menu-btn" id="mapMenuBtn">⋮</button>
+                </div>
+            </div>
+            
+            <!-- 时间轴侧边栏 -->
+            <div class="timeline-sidebar" id="timelineSidebar">
+                <div class="timeline-header">
+                    <span><img src="resources/style3.png" style="width: 20px; height: 20px; vertical-align: middle;"> 行程时间轴</span>
+                    <button class="timeline-close" id="timelineClose">−</button>
+                </div>
+                <div class="timeline-content" id="timelineContent">
+                    <div class="timeline-empty">暂无地点，添加地点后显示</div>
+                </div>
+                <div class="timeline-controls">
+                    <div class="timeline-info" id="timelineInfo">
+                        <span id="timelineStartDate">--</span>
+                        <span> → </span>
+                        <span id="timelineEndDate">--</span>
+                    </div>
+                    <div class="timeline-play-bar" id="timelinePlayBar">
+                        <div class="timeline-progress"></div>
+                        <div class="timeline-progress-fill" id="timelineProgressFill"></div>
+                    </div>
+                    <div class="timeline-buttons">
+                        <button id="timelinePlayBtn" class="timeline-btn"><img src="resources/style4.png" style="width: 16px; height: 16px; vertical-align: middle;"> 播放</button>
+                        <button id="timelineResetBtn" class="timeline-btn"><img src="resources/style5.png" style="width: 16px; height: 16px; vertical-align: middle;"> 重置</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="timeline-expand-btn" id="timelineExpandBtn">📅</button>
+            
+            <div id="map" class="map-container"></div>
+            <div class="map-bottom-bar">
+                <button id="addLocationBtn" class="add-location-btn" style="padding: 0; background: transparent; box-shadow: none;">
+                    <img src="resources/bottom4.png" style="width: 100%; max-width: 200px;">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部半屏抽屉 - 添加地点 -->
+    <div id="addLocationDrawer" class="bottom-drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-content">
+            <h3 class="drawer-title">📍 添加新地点</h3>
+            <div class="drawer-search-box">
+                <input type="text" id="drawerLocationInput" placeholder="输入地点名称，如：东京塔" class="drawer-input">
+                <button id="drawerSearchBtn" class="drawer-search-btn">🔍</button>
+            </div>
+            <div id="drawerSearchResults" class="drawer-search-results" style="display: none;"></div>
+            <div class="drawer-tip">💡 搜索后点击结果即可添加</div>
+            <button id="closeDrawerBtn" class="drawer-close-btn">取消</button>
+        </div>
+    </div>
+
+    <!-- 底部半屏抽屉 - 地点详情 -->
+    <div id="locationDetailDrawer" class="bottom-drawer">
+        <div class="drawer-handle"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h3 id="drawerLocationName" class="drawer-title">地点名称</h3>
+                <button id="drawerFavoriteBtn" class="drawer-fav-btn">⭐</button>
+            </div>
+            <div class="drawer-info-row">
+                <span class="drawer-label">📍 地址</span>
+                <span id="drawerAddress" class="drawer-value">加载中...</span>
+            </div>
+            <div class="drawer-info-row">
+                <span class="drawer-label">📅 日期</span>
+                <input type="date" id="drawerVisitDate" class="drawer-date-input">
+            </div>
+            <div class="drawer-info-row">
+                <span class="drawer-label">⭐ 评分</span>
+                <div class="drawer-stars" id="drawerRatingStars">
+                    <span data-rating="1">☆</span><span data-rating="2">☆</span><span data-rating="3">☆</span><span data-rating="4">☆</span><span data-rating="5">☆</span>
+                </div>
+            </div>
+            <div class="drawer-section">
+                <div class="drawer-section-title"><img src="resources/style1.png" style="width: 20px; height: 20px; vertical-align: middle;"> 故事</div>
+                <textarea id="drawerStory" rows="3" placeholder="记录在这里发生的故事..." class="drawer-textarea"></textarea>
+            </div>
+            <div class="drawer-section">
+                <div class="drawer-section-title"><img src="resources/style2.png" style="width: 20px; height: 20px; vertical-align: middle;"> 图片</div>
+                <div id="drawerImageGrid" class="drawer-image-grid"></div>
+                <button id="drawerAddImageBtn" class="drawer-add-btn"><img src="resources/style4.png" style="width: 16px; height: 16px; vertical-align: middle;"> 添加图片</button>
+            </div>
+            <div class="drawer-section">
+                <div class="drawer-section-title"><img src="resources/style3.png" style="width: 20px; height: 20px; vertical-align: middle;"> 标签</div>
+                <div id="drawerTagsContainer" class="drawer-tags"></div>
+                <div class="drawer-add-tag-row">
+                    <input type="text" id="drawerNewTag" placeholder="添加标签..." class="drawer-tag-input">
+                    <button id="drawerAddTagBtn" class="drawer-tag-add-btn"><img src="resources/style5.png" style="width: 16px; height: 16px; vertical-align: middle;"> 添加</button>
+                </div>
+            </div>
+            <div class="drawer-buttons">
+                <button id="drawerSaveBtn" class="drawer-save-btn">💾 保存</button>
+                <button id="drawerDeleteBtn" class="drawer-delete-btn">🗑️ 删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div id="drawerOverlay" class="drawer-overlay" style="display: none;"></div>
+
+    <input type="file" id="imageUploadInput" accept="image/jpeg,image/jpg,image/png" style="display: none;" multiple>
+
+    <script src="app.js"></script>
+</body>
+</html>
