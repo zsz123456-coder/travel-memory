@@ -48,21 +48,32 @@ jobs:
       - name: 同步资源
         run: npx cap sync android
 
-      - name: 复制图标到 Android 项目
+      - name: 复制图标并配置 Android
         run: |
-          # 复制所有图标文件夹
+          # 复制图标
           for dir in mipmap-*/; do
             if [ -d "$dir" ]; then
-              target_dir="android/app/src/main/res/${dir%/}"
+              dirname=$(basename "$dir")
+              target_dir="android/app/src/main/res/$dirname"
+              rm -rf "$target_dir"
               mkdir -p "$target_dir"
-              cp -r "$dir"* "$target_dir/"
-              echo "已复制: $dir"
+              cp -f "$dir"* "$target_dir/"
+              echo "已复制: $dirname"
             fi
           done
           
-          # 验证图标是否存在
+          # 配置 AndroidManifest.xml 使用传统图标
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if grep -q "android:icon" "$MANIFEST"; then
+            echo "AndroidManifest.xml 已配置图标"
+          else
+            sed -i 's/<application /<application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" /' "$MANIFEST"
+            echo "已添加图标配置到 AndroidManifest.xml"
+          fi
+          
+          # 验证
           echo "=== 验证图标 ==="
-          find android/app/src/main/res -name "ic_launcher.png" -type f | head -5 || echo "错误：没有找到图标文件！"
+          find android/app/src/main/res -name "ic_launcher.png" | wc -l
 
       - name: 编译 APK
         run: |
