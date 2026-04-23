@@ -48,39 +48,38 @@ jobs:
       - name: 同步资源
         run: npx cap sync android
 
-      - name: 复制图标并修复 AndroidManifest
+      - name: 强制复制图标（在 sync 之后）
         run: |
-          # 1. 复制所有图标文件夹
+          # 清空并重建图标目录
           for dir in mipmap-*/; do
             if [ -d "$dir" ]; then
               dirname=$(basename "$dir")
               target_dir="android/app/src/main/res/$dirname"
+              rm -rf "$target_dir"
               mkdir -p "$target_dir"
               cp -f "$dir"* "$target_dir/"
-              echo "已复制: $dirname"
+              echo "✅ 已复制: $dirname"
             fi
           done
-
-          # 2. 删除任何可能导致自适应图标的残留文件夹
+          
+          # 删除自适应图标配置
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
-          echo "已删除 mipmap-anydpi-v26 文件夹"
-
-          # 3. 直接修改 AndroidManifest.xml，彻底移除对 ic_launcher_round 的引用
-          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
-
-          # 删除 android:roundIcon 属性
-          sed -i 's/ android:roundIcon="@mipmap\/[^"]*"//g' "$MANIFEST_PATH"
-
-          # 确保 android:icon 属性存在且正确
-          if grep -q 'android:icon=' "$MANIFEST_PATH"; then
-            # 如果存在，替换其值为 @mipmap/ic_launcher
-            sed -i 's|android:icon="@mipmap/[^"]*"|android:icon="@mipmap/ic_launcher"|g' "$MANIFEST_PATH"
+          
+          # 修复 AndroidManifest.xml
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # 删除 roundIcon 引用
+          sed -i 's/ android:roundIcon="@mipmap\/[^"]*"//g' "$MANIFEST"
+          # 确保 icon 属性正确
+          if grep -q 'android:icon=' "$MANIFEST"; then
+            sed -i 's|android:icon="@mipmap/[^"]*"|android:icon="@mipmap/ic_launcher"|g' "$MANIFEST"
           else
-            # 如果不存在，在 <application 标签内添加
-            sed -i 's|<application |<application android:icon="@mipmap/ic_launcher" |' "$MANIFEST_PATH"
+            sed -i 's|<application |<application android:icon="@mipmap/ic_launcher" |' "$MANIFEST"
           fi
-
-          echo "已修复 AndroidManifest.xml"
+          
+          # 验证图标是否存在
+          echo "=== 验证图标 ==="
+          find android/app/src/main/res -name "ic_launcher.png" | head -5
+          ls -la android/app/src/main/res/mipmap-*/ic_launcher.png
 
       - name: 编译 APK
         run: |
