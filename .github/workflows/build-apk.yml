@@ -45,21 +45,24 @@ jobs:
       - name: 添加 Android 平台
         run: npx cap add android
 
+      - name: 同步资源
+        run: npx cap sync android
+
       - name: 复制图标到 Android 项目
         run: |
-          # 遍历所有 mipmap 文件夹
+          # 复制所有图标文件夹
           for dir in mipmap-*/; do
             if [ -d "$dir" ]; then
               target_dir="android/app/src/main/res/${dir%/}"
               mkdir -p "$target_dir"
-              cp -r "$dir"* "$target_dir/" 2>/dev/null || true
-              echo "已复制: $dir -> $target_dir"
+              cp -r "$dir"* "$target_dir/"
+              echo "已复制: $dir"
             fi
           done
-          echo "图标复制完成"
-
-      - name: 同步资源
-        run: npx cap sync android
+          
+          # 验证图标是否存在
+          echo "=== 验证图标 ==="
+          find android/app/src/main/res -name "ic_launcher.png" -type f | head -5 || echo "错误：没有找到图标文件！"
 
       - name: 编译 APK
         run: |
